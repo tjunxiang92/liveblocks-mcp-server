@@ -19,7 +19,8 @@
   "dependencies": {
     "@liveblocks/node": "^2.24.0",
     "@modelcontextprotocol/sdk": "^1.8.0",
-    "zod": "^3.24.2"
+    "mcp-handler": "^1.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.13.13",

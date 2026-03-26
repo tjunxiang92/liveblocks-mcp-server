@@ -9,11 +9,6 @@ import {
   UsersAccesses,
 } from "./zod.js";
 
-export const server = new McpServer({
-  name: "liveblocks-mcp-server",
-  version: "1.0.0",
-});
-
 // === Setup ========================================================
 
 let client: Liveblocks;
@@ -26,6 +21,12 @@ function getLiveblocks() {
   }
   return client;
 }
+
+/**
+ * Registers all Liveblocks tools on the given MCP server instance.
+ * Used by both the stdio transport (local) and HTTP transport (Vercel).
+ */
+export function registerTools(server: McpServer) {
 
 // === Rooms ========================================================
 
@@ -815,3 +816,16 @@ server.tool(
     );
   }
 );
+}
+
+/**
+ * Creates a new McpServer with all Liveblocks tools registered.
+ */
+export function createServer() {
+  const server = new McpServer({
+    name: "liveblocks-mcp-server",
+    version: "1.0.0",
+  });
+  registerTools(server);
+  return server;
+}
