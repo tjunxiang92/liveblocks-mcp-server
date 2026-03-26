@@ -11,15 +11,20 @@ import {
 
 // === Setup ========================================================
 
-let client: Liveblocks;
+const clients = new Map<string, Liveblocks>();
 
-function getLiveblocks() {
+function getLiveblocks(secret?: string) {
+  const key = secret || (process.env.LIVEBLOCKS_SECRET_KEY as string);
+  let client = clients.get(key);
   if (!client) {
-    client = new Liveblocks({
-      secret: process.env.LIVEBLOCKS_SECRET_KEY as string,
-    });
+    client = new Liveblocks({ secret: key });
+    clients.set(key, client);
   }
   return client;
+}
+
+function getSecretFromExtra(extra: { authInfo?: { token?: string } }) {
+  return extra.authInfo?.token;
 }
 
 /**
@@ -51,7 +56,7 @@ server.tool(
   },
   async ({ limit, userId, groupIds, startingAfter, query }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getRooms(
+      getLiveblocks(getSecretFromExtra(extra)).getRooms(
         { limit, userId, groupIds, startingAfter, query },
         { signal: extra.signal }
       )
@@ -74,7 +79,7 @@ server.tool(
     extra
   ) => {
     return await callLiveblocksApi(
-      getLiveblocks().createRoom(
+      getLiveblocks(getSecretFromExtra(extra)).createRoom(
         roomId,
         {
           defaultAccesses: defaultAccesses as any,
@@ -96,7 +101,7 @@ server.tool(
   },
   async ({ roomId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getRoom(roomId, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).getRoom(roomId, { signal: extra.signal })
     );
   }
 );
@@ -116,7 +121,7 @@ server.tool(
     extra
   ) => {
     return await callLiveblocksApi(
-      getLiveblocks().updateRoom(
+      getLiveblocks(getSecretFromExtra(extra)).updateRoom(
         roomId,
         {
           defaultAccesses: defaultAccesses as any,
@@ -138,7 +143,7 @@ server.tool(
   },
   async ({ roomId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteRoom(roomId, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).deleteRoom(roomId, { signal: extra.signal })
     );
   }
 );
@@ -152,7 +157,7 @@ server.tool(
   },
   async ({ roomId, newRoomId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().updateRoomId(
+      getLiveblocks(getSecretFromExtra(extra)).updateRoomId(
         { currentRoomId: roomId, newRoomId },
         { signal: extra.signal }
       )
@@ -168,7 +173,7 @@ server.tool(
   },
   async ({ roomId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getActiveUsers(roomId, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).getActiveUsers(roomId, { signal: extra.signal })
     );
   }
 );
@@ -182,7 +187,7 @@ server.tool(
   },
   async ({ roomId, event }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().broadcastEvent(roomId, event, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).broadcastEvent(roomId, event, { signal: extra.signal })
     );
   }
 );
@@ -197,7 +202,7 @@ server.tool(
   },
   async ({ roomId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getStorageDocument(roomId, "json", {
+      getLiveblocks(getSecretFromExtra(extra)).getStorageDocument(roomId, "json", {
         signal: extra.signal,
       })
     );
@@ -221,7 +226,7 @@ server.tool(
   },
   async ({ roomId, options }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getYjsDocument(roomId, options, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).getYjsDocument(roomId, options, { signal: extra.signal })
     );
   }
 );
@@ -252,7 +257,7 @@ server.tool(
   },
   async ({ roomId, query }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getThreads({ roomId, query }, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).getThreads({ roomId, query }, { signal: extra.signal })
     );
   }
 );
@@ -275,7 +280,7 @@ server.tool(
   },
   async ({ roomId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().createThread({ roomId, data }, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).createThread({ roomId, data }, { signal: extra.signal })
     );
   }
 );
@@ -289,7 +294,7 @@ server.tool(
   },
   async ({ roomId, threadId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getThread({ roomId, threadId }, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).getThread({ roomId, threadId }, { signal: extra.signal })
     );
   }
 );
@@ -303,7 +308,7 @@ server.tool(
   },
   async ({ roomId, threadId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getThreadParticipants(
+      getLiveblocks(getSecretFromExtra(extra)).getThreadParticipants(
         { roomId, threadId },
         { signal: extra.signal }
       )
@@ -328,7 +333,7 @@ server.tool(
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().editThreadMetadata(
+      getLiveblocks(getSecretFromExtra(extra)).editThreadMetadata(
         { roomId, threadId, data },
         { signal: extra.signal }
       )
@@ -348,7 +353,7 @@ server.tool(
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().markThreadAsResolved(
+      getLiveblocks(getSecretFromExtra(extra)).markThreadAsResolved(
         { roomId, threadId, data },
         { signal: extra.signal }
       )
@@ -368,7 +373,7 @@ server.tool(
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().markThreadAsUnresolved(
+      getLiveblocks(getSecretFromExtra(extra)).markThreadAsUnresolved(
         { roomId, threadId, data },
         { signal: extra.signal }
       )
@@ -385,7 +390,7 @@ server.tool(
   },
   async ({ roomId, threadId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteThread(
+      getLiveblocks(getSecretFromExtra(extra)).deleteThread(
         { roomId, threadId },
         { signal: extra.signal }
       )
@@ -405,7 +410,7 @@ server.tool(
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().subscribeToThread(
+      getLiveblocks(getSecretFromExtra(extra)).subscribeToThread(
         { roomId, threadId, data },
         { signal: extra.signal }
       )
@@ -425,7 +430,7 @@ server.tool(
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().unsubscribeFromThread(
+      getLiveblocks(getSecretFromExtra(extra)).unsubscribeFromThread(
         { roomId, threadId, data },
         { signal: extra.signal }
       )
@@ -442,7 +447,7 @@ server.tool(
   },
   async ({ roomId, threadId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getThreadSubscriptions(
+      getLiveblocks(getSecretFromExtra(extra)).getThreadSubscriptions(
         { roomId, threadId },
         { signal: extra.signal }
       )
@@ -464,7 +469,7 @@ server.tool(
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().createComment(
+      getLiveblocks(getSecretFromExtra(extra)).createComment(
         { roomId, threadId, data },
         { signal: extra.signal }
       )
@@ -482,7 +487,7 @@ server.tool(
   },
   async ({ roomId, threadId, commentId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getComment(
+      getLiveblocks(getSecretFromExtra(extra)).getComment(
         { roomId, threadId, commentId },
         { signal: extra.signal }
       )
@@ -505,7 +510,7 @@ server.tool(
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().editComment(
+      getLiveblocks(getSecretFromExtra(extra)).editComment(
         { roomId, threadId, commentId, data },
         { signal: extra.signal }
       )
@@ -523,7 +528,7 @@ server.tool(
   },
   async ({ roomId, threadId, commentId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteComment(
+      getLiveblocks(getSecretFromExtra(extra)).deleteComment(
         { roomId, threadId, commentId },
         { signal: extra.signal }
       )
@@ -546,7 +551,7 @@ server.tool(
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().addCommentReaction(
+      getLiveblocks(getSecretFromExtra(extra)).addCommentReaction(
         { roomId, threadId, commentId, data },
         { signal: extra.signal }
       )
@@ -569,7 +574,7 @@ server.tool(
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().removeCommentReaction(
+      getLiveblocks(getSecretFromExtra(extra)).removeCommentReaction(
         { roomId, threadId, commentId, data },
         { signal: extra.signal }
       )
@@ -586,7 +591,7 @@ server.tool(
   },
   async ({ roomId, userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getRoomSubscriptionSettings(
+      getLiveblocks(getSecretFromExtra(extra)).getRoomSubscriptionSettings(
         { roomId, userId },
         { signal: extra.signal }
       )
@@ -613,7 +618,7 @@ server.tool(
   },
   async ({ roomId, userId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().updateRoomSubscriptionSettings(
+      getLiveblocks(getSecretFromExtra(extra)).updateRoomSubscriptionSettings(
         { roomId, userId, data },
         { signal: extra.signal }
       )
@@ -630,7 +635,7 @@ server.tool(
   },
   async ({ roomId, userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteRoomSubscriptionSettings(
+      getLiveblocks(getSecretFromExtra(extra)).deleteRoomSubscriptionSettings(
         { roomId, userId },
         { signal: extra.signal }
       )
@@ -646,7 +651,7 @@ server.tool(
   },
   async ({ userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getUserRoomSubscriptionSettings(
+      getLiveblocks(getSecretFromExtra(extra)).getUserRoomSubscriptionSettings(
         { userId },
         { signal: extra.signal }
       )
@@ -671,7 +676,7 @@ server.tool(
   },
   async ({ userId, query, startingAfter, limit }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getInboxNotifications(
+      getLiveblocks(getSecretFromExtra(extra)).getInboxNotifications(
         { userId, query, startingAfter, limit },
         { signal: extra.signal }
       )
@@ -688,7 +693,7 @@ server.tool(
   },
   async ({ userId, inboxNotificationId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getInboxNotification(
+      getLiveblocks(getSecretFromExtra(extra)).getInboxNotification(
         { userId, inboxNotificationId },
         { signal: extra.signal }
       )
@@ -715,7 +720,7 @@ server.tool(
   },
   async ({ userId, kind, subjectId, activityData, roomId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().triggerInboxNotification(
+      getLiveblocks(getSecretFromExtra(extra)).triggerInboxNotification(
         { userId, kind: kind as `$${string}`, subjectId, activityData, roomId },
         { signal: extra.signal }
       )
@@ -732,7 +737,7 @@ server.tool(
   },
   async ({ userId, inboxNotificationId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteInboxNotification(
+      getLiveblocks(getSecretFromExtra(extra)).deleteInboxNotification(
         { userId, inboxNotificationId },
         { signal: extra.signal }
       )
@@ -748,7 +753,7 @@ server.tool(
   },
   async ({ userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteAllInboxNotifications(
+      getLiveblocks(getSecretFromExtra(extra)).deleteAllInboxNotifications(
         { userId },
         { signal: extra.signal }
       )
@@ -764,7 +769,7 @@ server.tool(
   },
   async ({ userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getNotificationSettings(
+      getLiveblocks(getSecretFromExtra(extra)).getNotificationSettings(
         { userId },
         { signal: extra.signal }
       )
@@ -793,7 +798,7 @@ server.tool(
   },
   async ({ userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().getNotificationSettings(
+      getLiveblocks(getSecretFromExtra(extra)).getNotificationSettings(
         { userId },
         { signal: extra.signal }
       )
@@ -809,7 +814,7 @@ server.tool(
   },
   async ({ userId }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks().deleteNotificationSettings(
+      getLiveblocks(getSecretFromExtra(extra)).deleteNotificationSettings(
         { userId },
         { signal: extra.signal }
       )
