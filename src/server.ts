@@ -27,6 +27,10 @@ function getSecretFromExtra(extra: { authInfo?: { token?: string } }) {
   return extra.authInfo?.token;
 }
 
+function toDate(s: string | undefined): Date | undefined {
+  return s ? new Date(s) : undefined;
+}
+
 /**
  * Registers all Liveblocks tools on the given MCP server instance.
  * Used by both the stdio transport (local) and HTTP transport (Vercel).
@@ -271,7 +275,7 @@ server.tool(
       comment: z.object({
         body: CommentBody,
         userId: z.string(),
-        createdAt: z.coerce.date().optional(),
+        createdAt: z.string().optional().describe("ISO 8601 date string"),
       }),
       metadata: z
         .record(z.string(), z.union([z.string(), z.boolean(), z.number()]))
@@ -280,7 +284,10 @@ server.tool(
   },
   async ({ roomId, data }, extra) => {
     return await callLiveblocksApi(
-      getLiveblocks(getSecretFromExtra(extra)).createThread({ roomId, data }, { signal: extra.signal })
+      getLiveblocks(getSecretFromExtra(extra)).createThread({
+        roomId,
+        data: { ...data, comment: { ...data.comment, createdAt: toDate(data.comment.createdAt) } },
+      }, { signal: extra.signal })
     );
   }
 );
@@ -328,13 +335,13 @@ server.tool(
         z.union([z.string(), z.boolean(), z.number(), z.null()])
       ),
       userId: z.string(),
-      updatedAt: z.coerce.date().optional(),
+      updatedAt: z.string().optional().describe("ISO 8601 date string"),
     }),
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
       getLiveblocks(getSecretFromExtra(extra)).editThreadMetadata(
-        { roomId, threadId, data },
+        { roomId, threadId, data: { ...data, updatedAt: toDate(data.updatedAt) } },
         { signal: extra.signal }
       )
     );
@@ -464,13 +471,13 @@ server.tool(
     data: z.object({
       body: CommentBody,
       userId: z.string(),
-      createdAt: z.coerce.date().optional(),
+      createdAt: z.string().optional().describe("ISO 8601 date string"),
     }),
   },
   async ({ roomId, threadId, data }, extra) => {
     return await callLiveblocksApi(
       getLiveblocks(getSecretFromExtra(extra)).createComment(
-        { roomId, threadId, data },
+        { roomId, threadId, data: { ...data, createdAt: toDate(data.createdAt) } },
         { signal: extra.signal }
       )
     );
@@ -505,13 +512,13 @@ server.tool(
     data: z.object({
       body: CommentBody,
       userId: z.string(),
-      editedAt: z.coerce.date().optional(),
+      editedAt: z.string().optional().describe("ISO 8601 date string"),
     }),
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
     return await callLiveblocksApi(
       getLiveblocks(getSecretFromExtra(extra)).editComment(
-        { roomId, threadId, commentId, data },
+        { roomId, threadId, commentId, data: { ...data, editedAt: toDate(data.editedAt) } },
         { signal: extra.signal }
       )
     );
@@ -546,13 +553,13 @@ server.tool(
     data: z.object({
       emoji: z.string(),
       userId: z.string(),
-      createdAt: z.coerce.date().optional(),
+      createdAt: z.string().optional().describe("ISO 8601 date string"),
     }),
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
     return await callLiveblocksApi(
       getLiveblocks(getSecretFromExtra(extra)).addCommentReaction(
-        { roomId, threadId, commentId, data },
+        { roomId, threadId, commentId, data: { ...data, createdAt: toDate(data.createdAt) } },
         { signal: extra.signal }
       )
     );
@@ -569,13 +576,13 @@ server.tool(
     data: z.object({
       emoji: z.string(),
       userId: z.string(),
-      removedAt: z.coerce.date().optional(),
+      removedAt: z.string().optional().describe("ISO 8601 date string"),
     }),
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
     return await callLiveblocksApi(
       getLiveblocks(getSecretFromExtra(extra)).removeCommentReaction(
-        { roomId, threadId, commentId, data },
+        { roomId, threadId, commentId, data: { ...data, removedAt: toDate(data.removedAt) } },
         { signal: extra.signal }
       )
     );
