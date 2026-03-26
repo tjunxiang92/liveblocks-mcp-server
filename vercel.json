@@ -1,7 +1,7 @@
 {
   "buildCommand": "",
   "outputDirectory": ".",
-  "functions": {
+"functions": {
     "api/[transport].ts": {
       "maxDuration": 60
     }

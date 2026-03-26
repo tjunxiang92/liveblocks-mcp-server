@@ -271,7 +271,7 @@ server.tool(
       comment: z.object({
         body: CommentBody,
         userId: z.string(),
-        createdAt: z.date().optional(),
+        createdAt: z.coerce.date().optional(),
       }),
       metadata: z
         .record(z.string(), z.union([z.string(), z.boolean(), z.number()]))
@@ -328,7 +328,7 @@ server.tool(
         z.union([z.string(), z.boolean(), z.number(), z.null()])
       ),
       userId: z.string(),
-      updatedAt: z.date().optional(),
+      updatedAt: z.coerce.date().optional(),
     }),
   },
   async ({ roomId, threadId, data }, extra) => {
@@ -464,7 +464,7 @@ server.tool(
     data: z.object({
       body: CommentBody,
       userId: z.string(),
-      createdAt: z.date().optional(),
+      createdAt: z.coerce.date().optional(),
     }),
   },
   async ({ roomId, threadId, data }, extra) => {
@@ -505,7 +505,7 @@ server.tool(
     data: z.object({
       body: CommentBody,
       userId: z.string(),
-      editedAt: z.date().optional(),
+      editedAt: z.coerce.date().optional(),
     }),
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
@@ -546,7 +546,7 @@ server.tool(
     data: z.object({
       emoji: z.string(),
       userId: z.string(),
-      createdAt: z.date().optional(),
+      createdAt: z.coerce.date().optional(),
     }),
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
@@ -569,7 +569,7 @@ server.tool(
     data: z.object({
       emoji: z.string(),
       userId: z.string(),
-      removedAt: z.date().optional(),
+      removedAt: z.coerce.date().optional(),
     }),
   },
   async ({ roomId, threadId, commentId, data }, extra) => {
